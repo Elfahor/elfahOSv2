@@ -1,0 +1,14 @@
+[package]
+name = "elfah_os"
+version = "0.1.0"
+authors = ["Elfahor"]
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"
