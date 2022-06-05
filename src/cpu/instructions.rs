@@ -1,10 +1,12 @@
 use core::arch::asm;
 
+/// halt the processor. It will be put out of sleep on the next interrupt.
 pub fn hlt() {
 	unsafe { asm!("hlt") }
 }
 
-pub fn inb(port: u16) -> u8 {
+/// unsafely read from a port. Use `cpu::Port` instead.
+pub unsafe fn inb(port: u16) -> u8 {
 	let mut data;
 	unsafe {
 		asm!(
@@ -16,7 +18,8 @@ pub fn inb(port: u16) -> u8 {
 	data
 }
 
-pub fn outb(port: u16, data: u8) {
+/// unsafely write to a port. Use `cpu::Port` instead.
+pub unsafe fn outb(port: u16, data: u8) {
 	unsafe {
 		asm!(
 		"out dx, al",

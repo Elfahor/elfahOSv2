@@ -1,6 +1,8 @@
 use core::marker::PhantomData;
 
 #[derive(PartialEq, Debug)]
+/// A tag gives the kernel information about something.
+/// They all share a common structure (that of `Tag`) but add custom fields: as such, every `Tag` instance should probably be casted to something else.
 pub struct Tag {
 	pub typ: TagType,
 	pub size: u32
@@ -9,6 +11,7 @@ pub struct Tag {
 #[repr(u32)]
 #[derive(PartialEq, Debug)]
 #[allow(dead_code)]
+/// All the kinds of tags
 pub enum TagType {
 	End = 0,
 	BootCommandLine = 1,
@@ -23,7 +26,7 @@ pub enum TagType {
 	ApmTable = 10,
 	Efi32SystemTablePtr = 11,
 	Efi64SystemTablePtr = 12,
-	SmbiosTables = 13,
+	SmBiosTables = 13,
 	AcpiOldRsdp = 14,
 	AcpiNewRsdp = 15,
 	NetworkingInfo = 16,
@@ -35,6 +38,7 @@ pub enum TagType {
 }
 
 #[derive(Clone)]
+/// An iterator among all tags
 pub struct TagIter<'a> {
 	current: *const Tag,
 	phantom: PhantomData<&'a Tag>
@@ -54,7 +58,7 @@ impl<'a> Iterator for TagIter<'a> {
 	
 	fn next(&mut self) -> Option<Self::Item> {
 		match unsafe {&*self.current} {
-			&Tag {
+			&Tag { // if this is an end tag
 				typ: TagType::End,
 				size: 8
 			} => None,

@@ -1,6 +1,7 @@
 use memory::{Frame, FrameAllocator};
 use multiboot::{MemoryArea, MemoryAreaIter};
 
+/// A very basic frame allocator
 pub struct AreaFrameAllocator<'a> {
 	next_free_frame: Frame,
 	current_area: Option<&'a MemoryArea>,
@@ -45,6 +46,7 @@ impl FrameAllocator for AreaFrameAllocator<'_> {
 }
 
 impl<'a> AreaFrameAllocator<'a> {
+	/// find the next unallocated frame
 	fn choose_next_area(&mut self) {
 		self.current_area = self.areas.clone().filter(|a| {
 			let addr = a.base_addr + a.length - 1;

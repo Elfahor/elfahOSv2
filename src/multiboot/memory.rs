@@ -3,6 +3,10 @@ use multiboot::tags::TagType;
 
 #[repr(C)]
 #[derive(Debug)]
+/// This tag provides memory map.
+///`entry_size` contains the size of one entry so that in future new fields may be added to it. It’s guaranteed to be a multiple of 8. `entry_version` is currently set at 0.
+/// Future versions will increment this field. Future version are guranteed to be backward compatible with older format.
+/// Each entry has the structure of `MemoryArea`
 pub struct MemoryMap {
 	typ: TagType,
 	size: u32,
@@ -14,8 +18,8 @@ pub struct MemoryMap {
 #[repr(C)]
 #[derive(Debug)]
 pub struct MemoryArea {
-	pub(crate) base_addr: u64,
-	pub(crate) length: u64,
+	pub base_addr: u64,
+	pub length: u64,
 	typ: MemoryAreaType,
 	reserved: u32
 }
@@ -32,6 +36,7 @@ pub enum MemoryAreaType {
 }
 
 impl MemoryMap {
+	/// Get the whole list of memory areas
 	pub fn get_mem_areas(&self) -> impl Iterator<Item = &MemoryArea> {
 		MemoryAreaIter {
 			current: (&self.entries) as *const MemoryArea as u64,
@@ -40,6 +45,7 @@ impl MemoryMap {
 			phantom: PhantomData
 		}
 	}
+	/// Get only the available memory areas
 	pub fn get_available_mem_areas(&self) -> impl Iterator<Item = &MemoryArea> {
 		self.get_mem_areas().filter(|m|
 			m.typ == MemoryAreaType::AvailableMemory)
@@ -47,6 +53,7 @@ impl MemoryMap {
 }
 
 #[derive(Clone)]
+/// An iterator i the MemoryAreas
 pub struct MemoryAreaIter<'a> {
 	current: u64,
 	last: u64,

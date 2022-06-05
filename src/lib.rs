@@ -10,7 +10,7 @@ mod memory;
 use core::{fmt::Write, panic::PanicInfo};
 use vga_text::{Color, VgaWriter};
 
-/// main entry point of the kernel
+/// main entry point of the kernel, once started by the assembly trampoline
 #[no_mangle]
 pub extern "C" fn kmain(mbi_addr: usize) -> ! {
 	let mut w = VgaWriter::default();
@@ -18,7 +18,7 @@ pub extern "C" fn kmain(mbi_addr: usize) -> ! {
 	writeln!(w, "MBI address: 0x{:x}", mbi_addr).unwrap();
 	let mbi = unsafe { multiboot::load(mbi_addr).unwrap() };
 	writeln!(w, "{:?}", mbi).unwrap();
-	for (i, t) in mbi.get_tags().enumerate() {
+	for t in mbi.get_tags() {
 		writeln!(w, "{:?}", t).unwrap();
 	}
 	let bl_name = mbi.get_bootloader_name().unwrap().name();
@@ -27,12 +27,15 @@ pub extern "C" fn kmain(mbi_addr: usize) -> ! {
 	for m in mem_map.get_available_mem_areas() {
 		writeln!(w, "{:x?}", m).unwrap();
 	}
+	let basic_mem_info = mbi.get_basic_mem_info().unwrap();
+	writeln!(w, "{:?}", basic_mem_info).unwrap();
 	
 	cpu::hlt();
 }
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
-	writeln!(VgaWriter::new(Color::Red, Color::Black), "{}", _info);
+	// we cannot do anything with the Result, we might risk an infinite recursion
+	let _ = writeln!(VgaWriter::new(Color::Red, Color::Black), "{}", _info);
 	cpu::hlt();
 }

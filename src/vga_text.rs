@@ -6,6 +6,7 @@ const BUFFER_HEIGHT: u16 = 25;
 #[allow(dead_code)]
 #[repr(u8)]
 #[derive(PartialEq, Eq, Clone, Copy)]
+/// A VGA text-mode color
 pub enum Color {
 	Black = 0x0,
 	Blue = 0x1,
@@ -26,6 +27,7 @@ pub enum Color {
 }
 
 #[repr(transparent)]
+/// Color codes are made of a 8 bit background color followed by a 8 bit foreground color
 struct ColorCode(u8);
 
 impl ColorCode {
@@ -35,6 +37,7 @@ impl ColorCode {
 }
 
 #[repr(transparent)]
+/// a character is made of a char (almost ASCII) and a color code
 pub struct Char(u16);
 
 impl Char {
@@ -44,21 +47,27 @@ impl Char {
 	pub fn new(c: char, fg: Color, bg: Color) -> Self {
 		Self::new_from_color_code(c, ColorCode::new(fg, bg))
 	}
+	/// Get the actual `char` this `Char` represents
 	pub fn char(&self) -> char {
-		char::from_u32((&self.0 & (0b0000000011111111)) as u32).expect("cannot convert char")
+		char::from_u32((&self.0 & (0xff)) as u32).expect("cannot convert char")
 	}
 }
 
+/// get the position in the buffer of a char at coordinates (x, y)
 fn get_offset(x: u16, y: u16) -> u32 {
 	(x + y * BUFFER_WIDTH).into()
 }
 
+/// write a `Char` to the screen
 pub fn putchar(c: Char, (x, y): (u16, u16)) {
-	let pos: u32 = (y * BUFFER_WIDTH + x) as u32;
+	let pos = get_offset(x, y);
 	let buffer_ptr = (0xb8000 + 2 * pos) as *mut u32;
 	unsafe { *buffer_ptr = c.0 as u32 }
 }
 
+/// Allows to write a whole string by keeping track of the position of characters.
+/// It supports line wrapping.
+/// Must be used with `core::fmt::Write` (this allows formatting)
 pub struct VgaWriter {
 	pos: (u16, u16),
 	fg: Color,
@@ -84,7 +93,7 @@ impl VgaWriter {
 	}
 	
 	fn newline(&mut self) {
-		unimplemented!()
+		todo!()
 	}
 }
 
