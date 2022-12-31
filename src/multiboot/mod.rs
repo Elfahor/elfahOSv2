@@ -13,6 +13,7 @@ mod bootloader_name;
 mod elf_symbols;
 mod basic_mem_info;
 mod end_tag;
+mod apm_table;
 
 /// errors that can occur when loading an MBI
 #[derive(Debug)]
